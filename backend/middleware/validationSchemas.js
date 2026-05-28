@@ -64,14 +64,35 @@ export const authSchemas = {
 export const hrSchemas = {
   createEmployee: {
     body: z.object({
-      name:       safeString(2, 80, 'Name'),
-      email:      emailField,
-      department: safeString(1, 100, 'Department'),
-      position:   safeString(1, 100, 'Position'),
-      salary:     z.number().positive('Salary must be a positive number').max(10_000_000),
-      status:     z.enum(['Active', 'Inactive', 'On Leave']).default('Active'),
-      phone:      z.string().max(20).optional(),
-      joinDate:   z.string().datetime().optional(),
+      name:         safeString(2, 80, 'Name'),
+      email:        emailField,
+      department:   safeString(1, 100, 'Department'),
+      role:         safeString(1, 100, 'Role'),
+      salary:       z.number().positive('Salary must be a positive number').max(10_000_000),
+      status:       z.enum(['Active', 'On Leave', 'Terminated']).default('Active'),
+      phone:        z.string().max(20).optional(),
+      joinDate:     z.string().datetime().optional(),
+      profileImage: z.string().optional(),
+      bio:          z.string().optional(),
+      address:      z.string().optional(),
+      skills:       z.array(z.string()).optional(),
+    }),
+  },
+
+  updateEmployee: {
+    body: z.object({
+      name:         safeString(2, 80, 'Name').optional(),
+      email:        emailField.optional(),
+      department:   safeString(1, 100, 'Department').optional(),
+      role:         safeString(1, 100, 'Role').optional(),
+      salary:       z.number().positive('Salary must be a positive number').max(10_000_000).optional(),
+      status:       z.enum(['Active', 'On Leave', 'Terminated']).optional(),
+      phone:        z.string().max(20).optional(),
+      joinDate:     z.string().datetime().optional(),
+      profileImage: z.string().optional(),
+      bio:          z.string().optional(),
+      address:      z.string().optional(),
+      skills:       z.array(z.string()).optional(),
     }),
   },
 

@@ -28,7 +28,7 @@ router.route('/employees')
 
 router.route('/employees/:id')
   .get(authorize('admin', 'hr', 'manager', 'employee'), getEmployeeById)
-  .put(authorize('admin', 'hr'), updateEmployee)
+  .put(authorize('admin', 'hr'), validate(hrSchemas.updateEmployee), updateEmployee)
   .delete(authorize('admin', 'hr'), deleteEmployee);
 
 // ── Attendance Logs ───────────────────────────────────────────────

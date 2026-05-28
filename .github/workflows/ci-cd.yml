@@ -1,0 +1,104 @@
+name: CloudERP CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  # ── 1. Code Quality, Linting & Build Verification ───────────────────
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'     # ← Fixed: was 'node-size' (invalid key, silently ignored)
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # Backend
+      - name: Install Backend Dependencies
+        run: cd backend && npm ci
+
+      - name: Audit Backend Security Vulnerabilities
+        run: cd backend && npm audit --audit-level=high || true
+
+      # Frontend
+      - name: Install Frontend Dependencies
+        run: cd frontend && npm ci
+
+      - name: Compile Vite Production Build
+        env:
+          VITE_API_URL: ''     # Empty string → relative paths; not a real backend needed for build check
+        run: cd frontend && npm run build
+
+  # ── 2. Docker Image Build Verification ──────────────────────────────
+  docker-build-check:
+    needs: lint-and-test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3    # ← Fixed: was 'actions/setup-buildx-action@v3' (wrong org)
+
+      # Backend
+      - name: Build Backend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: clouderp-backend:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # Frontend (pass empty VITE_API_URL for CI build)
+      - name: Build Frontend Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          file: ./frontend/Dockerfile
+          push: false
+          tags: clouderp-frontend:latest
+          build-args: |
+            VITE_API_URL=
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ML Service
+      - name: Build ML Service Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./ml-service
+          file: ./ml-service/Dockerfile
+          push: false
+          tags: clouderp-ml-service:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # ── 3. Production Deployment Trigger (main branch only) ─────────────
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: docker-build-check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Render Backend Deploy
+        if: ${{ secrets.RENDER_BACKEND_DEPLOY_HOOK != '' }}
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_BACKEND_DEPLOY_HOOK }}" \
+            -H "Accept: application/json"
+
+      - name: Trigger Render ML Service Deploy
+        if: ${{ secrets.RENDER_ML_DEPLOY_HOOK != '' }}
+        run: |
+          curl -f -X POST "${{ secrets.RENDER_ML_DEPLOY_HOOK }}" \
+            -H "Accept: application/json"

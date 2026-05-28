@@ -1,0 +1,80 @@
+version: '3.8'
+
+services:
+  # ── 1. FastAPI with Hot Reload ──────────────────────────────────────
+  ml-service:
+    build:
+      context: ./ml-service
+      dockerfile: Dockerfile
+    container_name: clouderp-ml-service-dev
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./ml-service:/app
+    command: uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+    networks:
+      - clouderp-dev-net
+    environment:
+      - PORT=8000
+    restart: always
+
+  # ── 2. Express Backend with Nodemon Watchers ────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: clouderp-backend-dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./backend:/usr/src/app
+      - /usr/src/app/node_modules # Protect container modules from being overridden by host OS node_modules
+    command: npm run dev
+    environment:
+      - NODE_ENV=development
+      - PORT=5000
+      - MONGO_URI=mongodb://mongodb:27017/clouderp
+      - JWT_SECRET=dev_jwt_secret_token_123
+      - JWT_REFRESH_SECRET=dev_jwt_refresh_secret_token_123
+    networks:
+      - clouderp-dev-net
+    depends_on:
+      - mongodb
+    restart: always
+
+  # ── 3. Vite React Frontend with Hot Module Replacement (HMR) ────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: clouderp-frontend-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules # Protect container modules
+    command: npm run dev -- --host
+    networks:
+      - clouderp-dev-net
+    depends_on:
+      - backend
+    restart: always
+
+  # ── 4. MongoDB Exposed locally for GUI inspector tools ──────────────
+  mongodb:
+    image: mongo:6-jammy
+    container_name: clouderp-mongodb-dev
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-dev-data:/data/db
+    networks:
+      - clouderp-dev-net
+    restart: always
+
+networks:
+  clouderp-dev-net:
+    driver: bridge
+
+volumes:
+  mongo-dev-data:

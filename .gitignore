@@ -1,0 +1,28 @@
+# dependencies
+node_modules
+
+# environment variables
+.env
+.env.local
+.env.*.local
+
+# build outputs
+dist
+build
+
+# logs
+logs
+*.log
+
+# system
+.DS_Store
+Thumbs.db
+
+# python
+__pycache__/
+*.pyc
+.venv/
+
+# docker
+*.pidnode_modules
+node_modules

@@ -27,6 +27,7 @@ const getCookieOptions = () => {
     // 'none' is required for cross-origin requests (Vercel frontend → Render backend)
     // 'strict' only works when frontend and backend share the same domain
     sameSite: isProd ? 'none' : 'strict',
+    path:     '/',     // Cookie available on all routes
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   };
 };
@@ -82,8 +83,9 @@ export const registerUser = async (req, res, next) => {
     res.cookie('refreshToken', refreshToken, getCookieOptions());
 
     // Print Verification link for local development
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     console.log(`\n📬 [VERIFY EMAIL] User registered: ${user.email}`);
-    console.log(`🔗 Verification Link: http://localhost:5173/verify-email?token=${emailVerificationToken}\n`);
+    console.log(`🔗 Verification Link: ${frontendUrl}/verify-email?token=${emailVerificationToken}\n`);
 
     // Async trigger welcome email
     sendWelcomeEmail(user).catch(err => console.error("Welcome email failed:", err));
@@ -165,11 +167,13 @@ export const logoutUser = async (req, res, next) => {
       }
     }
 
-    // Clear client cookie
+    // Clear client cookie — must match the same options used when setting it
+    const cookieOpts = getCookieOptions();
     res.clearCookie('refreshToken', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      httpOnly: cookieOpts.httpOnly,
+      secure:   cookieOpts.secure,
+      sameSite: cookieOpts.sameSite,
+      path:     '/',
     });
 
     res.status(200).json({ success: true, message: 'Successfully logged out.' });
@@ -251,10 +255,11 @@ export const forgotPassword = async (req, res) => {
     user.resetPasswordExpires = Date.now() + 60 * 60 * 1000;
     await user.save();
 
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
     console.log(`\n🔑 [PASSWORD RESET] User: ${user.email}`);
-    console.log(`🔗 Reset Link: http://localhost:5173/reset-password?token=${resetToken}\n`);
+    console.log(`🔗 Reset Link: ${frontendUrl}/reset-password?token=${resetToken}\n`);
 
-    const resetUrl = `http://localhost:5173/reset-password?token=${resetToken}`;
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
     sendPasswordResetEmail(user, resetUrl).catch(err => console.error("Reset email failed:", err));
 
     res.status(200).json({

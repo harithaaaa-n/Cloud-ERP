@@ -83,7 +83,8 @@ export function NotificationProvider({ children }) {
     fetchNotifications();
 
     // In dev: empty string → Vite proxy. In prod: deployed backend URL (wss:// auto-resolved)
-    const socketUrl = import.meta.env.VITE_API_URL || '';
+    const socketUrlRaw = import.meta.env.VITE_SOCKET_URL || import.meta.env.VITE_API_URL || '';
+    const socketUrl = socketUrlRaw.endsWith('/api') ? socketUrlRaw.slice(0, -4) : socketUrlRaw;
     const token = getAccessToken();
 
     const socket = io(socketUrl, {

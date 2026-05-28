@@ -83,13 +83,29 @@ app.use(helmet.contentSecurityPolicy({
     'script-src':      ["'self'"],                  // No unsafe-eval or unsafe-inline in prod
     'style-src':       ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
     'font-src':        ["'self'", 'https://fonts.gstatic.com'],
-    'connect-src':     [
-      "'self'",
-      process.env.FRONTEND_URL  || 'http://localhost:5173',
-      process.env.ML_SERVICE_URL || 'http://localhost:8000',
-      'ws://localhost:5000',
-      'wss://localhost:5000',
-    ],
+    'connect-src': (() => {
+      const src = [
+        "'self'",
+        'ws://localhost:5000',
+        'wss://localhost:5000',
+      ];
+      if (process.env.FRONTEND_URL) src.push(process.env.FRONTEND_URL);
+      if (process.env.ML_SERVICE_URL) src.push(process.env.ML_SERVICE_URL);
+      if (process.env.CORS_ORIGINS) {
+        process.env.CORS_ORIGINS.split(',').forEach(origin => {
+          const clean = origin.trim();
+          if (clean) {
+            src.push(clean);
+            try {
+              const url = new URL(clean);
+              const wsProto = url.protocol === 'https:' ? 'wss:' : 'ws:';
+              src.push(`${wsProto}//${url.host}`);
+            } catch (e) {}
+          }
+        });
+      }
+      return src;
+    })(),
     'img-src':         ["'self'", 'data:', 'blob:'],
     'frame-ancestors': ["'none'"],     // Redundant with frameguard but defence-in-depth
     'base-uri':        ["'self'"],

@@ -18,8 +18,10 @@ export const registerLogoutCallback = (cb) => {
 // ── Production-safe base URL ──────────────────────────────────────────────────
 // In development: empty string → Vite proxy forwards /api/* to http://localhost:5000
 // In production: VITE_API_URL must be set to the deployed backend URL
-//                e.g. https://clouderp-backend.onrender.com
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+//                e.g. https://clouderp-backend.onrender.com or with trailing /api
+const VITE_API_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = VITE_API_URL.endsWith('/api') ? VITE_API_URL.slice(0, -4) : VITE_API_URL;
+
 
 const apiClient = axios.create({
   baseURL: BASE_URL,
@@ -58,7 +60,17 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    // Never attempt auto-refresh for auth endpoints — prevents infinite 401 loops
+    const isAuthEndpoint = originalRequest.url?.includes('/api/auth/login')
+      || originalRequest.url?.includes('/api/auth/refresh')
+      || originalRequest.url?.includes('/api/auth/register')
+      || originalRequest.url?.includes('/api/auth/logout');
+
+    if (
+      error.response?.status === 401
+      && !originalRequest._retry
+      && !isAuthEndpoint
+    ) {
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });

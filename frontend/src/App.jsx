@@ -13,7 +13,7 @@ import ResetPassword  from './pages/auth/ResetPassword';
 import VerifyEmail    from './pages/auth/VerifyEmail';
 import Unauthorized   from './pages/Unauthorized';
 
-// ── App Pages ─────────────────────────────────────────────────────
+import LandingPage from './pages/LandingPage';
 import Dashboard  from './pages/Dashboard';
 import Finance    from './pages/finance/Finance';
 import Accounts   from './pages/finance/Accounts';
@@ -41,9 +41,11 @@ function App() {
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password"  element={<ResetPassword />} />
 
+          {/* ── Public Landing Page ────────────────────────────── */}
+          <Route path="/" element={<LandingPage />} />
+
           {/* ── Protected App Routes ──────────────────────────── */}
           <Route
-            path="/"
             element={
               <ProtectedRoute>
                 <Layout />
@@ -51,33 +53,33 @@ function App() {
             }
           >
             {/* Dashboard */}
-            <Route index element={<Dashboard />} />
+            <Route path="dashboard" element={<Dashboard />} />
 
             {/* Unauthorized fallback */}
             <Route path="unauthorized" element={<Unauthorized />} />
 
             {/* Notifications */}
-            <Route path="notifications" element={<RoleGuard allowedRoles={['admin', 'hr', 'manager', 'employee']}><NotificationsPage /></RoleGuard>} />
+            <Route path="notifications" element={<RoleGuard allowedRoles={['admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply']}><NotificationsPage /></RoleGuard>} />
 
             {/* Finance */}
-            <Route path="finance"          element={<RoleGuard allowedRoles={['admin', 'manager']}><Finance /></RoleGuard>} />
-            <Route path="finance/accounts" element={<RoleGuard allowedRoles={['admin', 'manager']}><Accounts /></RoleGuard>} />
-            <Route path="finance/payroll"  element={<RoleGuard allowedRoles={['admin', 'hr']}><Payroll /></RoleGuard>} />
+            <Route path="finance"          element={<RoleGuard allowedRoles={['admin', 'manager', 'finance']}><Finance /></RoleGuard>} />
+            <Route path="finance/accounts" element={<RoleGuard allowedRoles={['admin', 'manager', 'finance']}><Accounts /></RoleGuard>} />
+            <Route path="finance/payroll"  element={<RoleGuard allowedRoles={['admin', 'hr', 'finance']}><Payroll /></RoleGuard>} />
 
             {/* HR */}
             <Route path="hr"          element={<RoleGuard allowedRoles={['admin', 'hr']}><Employees /></RoleGuard>} />
-            <Route path="hr/profiles" element={<RoleGuard allowedRoles={['admin', 'hr', 'manager', 'employee']}><Profiles /></RoleGuard>} />
+            <Route path="hr/profiles" element={<RoleGuard allowedRoles={['admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply']}><Profiles /></RoleGuard>} />
 
             {/* Inventory */}
-            <Route path="inventory" element={<RoleGuard allowedRoles={['admin', 'manager']}><Inventory /></RoleGuard>} />
+            <Route path="inventory" element={<RoleGuard allowedRoles={['admin', 'manager', 'inventory']}><Inventory /></RoleGuard>} />
 
             {/* Supply Chain */}
-            <Route path="supply"        element={<RoleGuard allowedRoles={['admin', 'manager']}><SupplyChain /></RoleGuard>} />
-            <Route path="supply/orders" element={<RoleGuard allowedRoles={['admin', 'manager']}><Orders /></RoleGuard>} />
+            <Route path="supply"        element={<RoleGuard allowedRoles={['admin', 'manager', 'supply']}><SupplyChain /></RoleGuard>} />
+            <Route path="supply/orders" element={<RoleGuard allowedRoles={['admin', 'manager', 'supply']}><Orders /></RoleGuard>} />
 
             {/* Reports & AI */}
-            <Route path="reports" element={<RoleGuard allowedRoles={['admin', 'manager']}><Reports /></RoleGuard>} />
-            <Route path="ai"      element={<RoleGuard allowedRoles={['admin', 'manager']}><AIInsights /></RoleGuard>} />
+            <Route path="reports" element={<RoleGuard allowedRoles={['admin', 'manager', 'finance']}><Reports /></RoleGuard>} />
+            <Route path="ai"      element={<RoleGuard allowedRoles={['admin', 'manager', 'finance', 'hr', 'inventory', 'supply']}><AIInsights /></RoleGuard>} />
           </Route>
 
           {/* ── Catch-all → redirect to dashboard ─────────────── */}

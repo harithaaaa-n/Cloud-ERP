@@ -18,19 +18,19 @@ const router = express.Router();
 router.use(protect);
 
 // ── Analytics & Logs (Registered before :id to prevent parameter conflicts) ──
-router.get('/analytics', authorize('admin', 'manager'), getInventoryAnalytics);
-router.get('/logs', authorize('admin', 'manager'), getInventoryLogs);
+router.get('/analytics', authorize('admin', 'manager', 'inventory'), getInventoryAnalytics);
+router.get('/logs', authorize('admin', 'manager', 'inventory'), getInventoryLogs);
 
 // ── Catalog Operations ──
 router.route('/')
-  .get(authorize('admin', 'manager'), getProducts)
-  .post(authorize('admin', 'manager'), validate(inventorySchemas.createProduct), createProduct);
+  .get(authorize('admin', 'manager', 'inventory'), getProducts)
+  .post(authorize('admin', 'manager', 'inventory'), validate(inventorySchemas.createProduct), createProduct);
 
 router.route('/:id')
-  .put(authorize('admin', 'manager'), validate(inventorySchemas.updateProduct), updateProduct)
-  .delete(authorize('admin', 'manager'), deleteProduct);
+  .put(authorize('admin', 'manager', 'inventory'), validate(inventorySchemas.updateProduct), updateProduct)
+  .delete(authorize('admin', 'manager', 'inventory'), deleteProduct);
 
 // ── Stock Adjustments ──
-router.post('/:id/adjust', authorize('admin', 'manager'), adjustStock);
+router.post('/:id/adjust', authorize('admin', 'manager', 'inventory'), adjustStock);
 
 export default router;

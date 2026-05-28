@@ -23,7 +23,7 @@ router.use(protect);
 
 // ── Employee CRUD ─────────────────────────────────────────────────
 router.route('/employees')
-  .get(authorize('admin', 'hr', 'manager'), getEmployees)
+  .get(authorize('admin', 'hr', 'manager', 'employee'), getEmployees)
   .post(authorize('admin', 'hr'), validate(hrSchemas.createEmployee), createEmployee);
 
 router.route('/employees/:id')
@@ -41,8 +41,8 @@ router.post('/employees/:id/leaves', authorize('admin', 'hr', 'employee'), apply
 router.patch('/leaves/:leaveId', authorize('admin', 'hr'), updateLeaveStatus);
 
 // ── Salary / Payroll Logs ─────────────────────────────────────────
-router.get('/payroll', authorize('admin', 'hr'), getAllPayslips);
-router.post('/employees/:id/salaries', authorize('admin', 'hr'), generateSalary);
-router.patch('/salaries/:salaryId', authorize('admin', 'hr'), paySalary);
+router.get('/payroll', authorize('admin', 'hr', 'finance'), getAllPayslips);
+router.post('/employees/:id/salaries', authorize('admin', 'hr', 'finance'), generateSalary);
+router.patch('/salaries/:salaryId', authorize('admin', 'hr', 'finance'), paySalary);
 
 export default router;

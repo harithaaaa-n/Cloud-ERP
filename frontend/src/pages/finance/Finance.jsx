@@ -4,7 +4,7 @@ import { Plus, ArrowUpRight, ArrowDownLeft, Download, Loader2 } from 'lucide-rea
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from 'recharts';
-import { mockRevenueData } from '../../data/mockData';
+const mockRevenueData = [];
 import { api } from '../../utils/api';
 
 const fmt = (n) => `₹${n.toLocaleString('en-IN')}`;

@@ -12,32 +12,32 @@ const navGroups = [
   {
     label: 'Core',
     items: [
-      { path: '/',          label: 'Dashboard',   icon: LayoutDashboard, roles: ['admin', 'hr', 'manager', 'employee'] },
-      { path: '/reports',   label: 'Reports',     icon: BarChart3, roles: ['admin', 'manager'] },
-      { path: '/ai',        label: 'AI Insights', icon: Brain, roles: ['admin', 'manager'] },
+      { path: '/dashboard',          label: 'Dashboard',   icon: LayoutDashboard, roles: ['admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply'] },
+      { path: '/reports',   label: 'Reports',     icon: BarChart3, roles: ['admin', 'manager', 'finance'] },
+      { path: '/ai',        label: 'AI Insights', icon: Brain, roles: ['admin', 'manager', 'finance', 'hr', 'inventory', 'supply'] },
     ]
   },
   {
     label: 'Finance',
     items: [
-      { path: '/finance',         label: 'Overview',     icon: DollarSign, roles: ['admin', 'manager'] },
-      { path: '/finance/accounts',label: 'Accounts',     icon: CreditCard, roles: ['admin', 'manager'] },
-      { path: '/finance/payroll', label: 'Payroll',      icon: Briefcase, roles: ['admin', 'hr'] },
+      { path: '/finance',         label: 'Overview',     icon: DollarSign, roles: ['admin', 'manager', 'finance'] },
+      { path: '/finance/accounts',label: 'Accounts',     icon: CreditCard, roles: ['admin', 'manager', 'finance'] },
+      { path: '/finance/payroll', label: 'Payroll',      icon: Briefcase, roles: ['admin', 'hr', 'finance'] },
     ]
   },
   {
     label: 'People',
     items: [
       { path: '/hr',          label: 'Employees',   icon: Users, roles: ['admin', 'hr'] },
-      { path: '/hr/profiles', label: 'Profiles',    icon: FileText, roles: ['admin', 'hr', 'manager', 'employee'] },
+      { path: '/hr/profiles', label: 'Profiles',    icon: FileText, roles: ['admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply'] },
     ]
   },
   {
     label: 'Operations',
     items: [
-      { path: '/inventory',   label: 'Inventory',    icon: Package, roles: ['admin', 'manager'] },
-      { path: '/supply',      label: 'Supply Chain', icon: Truck, roles: ['admin', 'manager'] },
-      { path: '/supply/orders', label: 'Orders',     icon: ShoppingCart, roles: ['admin', 'manager'] },
+      { path: '/inventory',   label: 'Inventory',    icon: Package, roles: ['admin', 'manager', 'inventory'] },
+      { path: '/supply',      label: 'Supply Chain', icon: Truck, roles: ['admin', 'manager', 'supply'] },
+      { path: '/supply/orders', label: 'Orders',     icon: ShoppingCart, roles: ['admin', 'manager', 'supply'] },
     ]
   }
 ];

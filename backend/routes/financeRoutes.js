@@ -9,9 +9,9 @@ const router = express.Router();
 router.use(protect);
 
 router.route('/transactions')
-  .get(authorize('admin', 'manager'), getTransactions)
-  .post(authorize('admin', 'manager'), validate(financeSchemas.createTransaction), createTransaction);
+  .get(authorize('admin', 'manager', 'finance'), getTransactions)
+  .post(authorize('admin', 'manager', 'finance'), validate(financeSchemas.createTransaction), createTransaction);
 
-router.get('/summary', authorize('admin', 'manager'), getFinanceSummary);
+router.get('/summary', authorize('admin', 'manager', 'finance'), getFinanceSummary);
 
 export default router;

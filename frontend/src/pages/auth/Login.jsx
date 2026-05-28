@@ -105,7 +105,7 @@ export default function Login() {
   const [loading, setLoading]   = useState(false);
   const [apiError, setApiError] = useState('');
 
-  const from = location.state?.from?.pathname || '/';
+  const from = location.state?.from?.pathname || '/dashboard';
 
   const handleChange = (field) => (e) => {
     setForm((p) => ({ ...p, [field]: e.target.value }));

@@ -10,7 +10,8 @@ import {
   Package, ShoppingCart, AlertTriangle, Brain, Zap, Activity, Truck, Loader2, UserCheck, Shield
 } from 'lucide-react';
 const IconMap = { Activity, DollarSign, Users, Truck };
-import { mockRevenueData, categoryPieData } from '../data/mockData';
+const mockRevenueData = [];
+const categoryPieData = [];
 import { api } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 

@@ -12,9 +12,9 @@ export default function Accounts() {
   const [showModal, setShowModal] = useState(false);
 
   // Opening balance mock + computed shifts
-  const [cashBalance, setCashBalance] = useState(8420000);
-  const [receivableBalance] = useState(1250000);
-  const [payableBalance] = useState(640000);
+  const [cashBalance, setCashBalance] = useState(0);
+  const [receivableBalance] = useState(0);
+  const [payableBalance] = useState(0);
 
   const fetchLedgerData = async () => {
     try {

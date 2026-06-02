@@ -375,6 +375,138 @@ export default function Dashboard() {
           </motion.div>
         </div>
       )}
+
+      {/* 4. FINANCE PORTAL */}
+      {userRole === 'finance' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="glass-card p-6 md:col-span-2" variants={cardAnim} transition={{ delay: 0.1 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Finance Officer Profile</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>NAME</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.name}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>EMAIL</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.email}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>ROLE DEPT</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-indigo)', textTransform: 'capitalize' }}>{user?.role}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>STATUS</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-emerald)' }}>Active Session</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div className="glass-card p-6 flex flex-col justify-between" variants={cardAnim} transition={{ delay: 0.2 }}>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Finance Shortcuts</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 20 }}>
+                Manage company ledger transactions, configure payroll, and audit account balances.
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gap: 10 }}>
+              <Link to="/finance" className="btn btn-primary" style={{ justifyContent: 'space-between', padding: '12px 16px' }}>
+                <span>Finance Overview</span> <ChevronRight size={16} />
+              </Link>
+              <Link to="/finance/accounts" className="btn btn-secondary" style={{ justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                <span>Ledger Accounts</span> <ChevronRight size={16} />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 5. INVENTORY PORTAL */}
+      {userRole === 'inventory' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="glass-card p-6 md:col-span-2" variants={cardAnim} transition={{ delay: 0.1 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Inventory Specialist Profile</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>NAME</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.name}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>EMAIL</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.email}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>ROLE DEPT</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-emerald)', textTransform: 'capitalize' }}>{user?.role}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>STATUS</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-emerald)' }}>Active Session</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div className="glass-card p-6 flex flex-col justify-between" variants={cardAnim} transition={{ delay: 0.2 }}>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Inventory Shortcuts</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 20 }}>
+                Audit warehouse stocks, log item adjustments, and update low-level warning thresholds.
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gap: 10 }}>
+              <Link to="/inventory" className="btn btn-primary" style={{ justifyContent: 'space-between', padding: '12px 16px' }}>
+                <span>Stock Catalog</span> <ChevronRight size={16} />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* 6. SUPPLY CHAIN PORTAL */}
+      {userRole === 'supply' && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <motion.div className="glass-card p-6 md:col-span-2" variants={cardAnim} transition={{ delay: 0.1 }}>
+            <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 16 }}>Supply Chain Officer Profile</h2>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 20 }}>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>NAME</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.name}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>EMAIL</span>
+                <span style={{ fontSize: 14, fontWeight: 600 }}>{user?.email}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>ROLE DEPT</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-amber)', textTransform: 'capitalize' }}>{user?.role}</span>
+              </div>
+              <div style={{ padding: 16, background: 'var(--bg-elevated)', borderRadius: 10, border: '1px solid var(--border)' }}>
+                <span style={{ fontSize: 11, color: 'var(--text-muted)', display: 'block', marginBottom: 4 }}>STATUS</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: 'var(--accent-emerald)' }}>Active Session</span>
+              </div>
+            </div>
+          </motion.div>
+
+          <motion.div className="glass-card p-6 flex flex-col justify-between" variants={cardAnim} transition={{ delay: 0.2 }}>
+            <div>
+              <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 12 }}>Supply Chain Shortcuts</h2>
+              <p style={{ fontSize: 13, color: 'var(--text-secondary)', lineHeight: 1.5, marginBottom: 20 }}>
+                Oversee supplier networks, track pending shipping coordinates, and generate purchase orders.
+              </p>
+            </div>
+            
+            <div style={{ display: 'grid', gap: 10 }}>
+              <Link to="/supply" className="btn btn-primary" style={{ justifyContent: 'space-between', padding: '12px 16px' }}>
+                <span>Supplier Overview</span> <ChevronRight size={16} />
+              </Link>
+              <Link to="/supply/orders" className="btn btn-secondary" style={{ justifyContent: 'space-between', padding: '12px 16px', background: 'var(--bg-elevated)', border: '1px solid var(--border)' }}>
+                <span>Purchase Orders</span> <ChevronRight size={16} />
+              </Link>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </motion.div>
   );
 }

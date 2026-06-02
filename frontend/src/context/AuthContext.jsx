@@ -40,26 +40,16 @@ export function AuthProvider({ children }) {
     const initSession = async () => {
       const wasLoggedIn = localStorage.getItem('clouderp_user_logged_in');
       if (wasLoggedIn) {
-        if (localStorage.getItem('clouderp_demo_mode') === 'true') {
-          const usr = localStorage.getItem('clouderp_demo_current_user');
-          if (usr) {
-            setUser(JSON.parse(usr));
-            setAccessToken('demo-jwt-token-rotating-mock');
-          } else {
-            localStorage.removeItem('clouderp_user_logged_in');
+        try {
+          // Attempt a silent token refresh
+          const res = await apiClient.post('/api/auth/refresh', {}, { withCredentials: true });
+          if (res.data.success && res.data.accessToken) {
+            setAccessToken(res.data.accessToken);
+            setUser(res.data.user);
           }
-        } else {
-          try {
-            // Attempt a silent token refresh
-            const res = await apiClient.post('/api/auth/refresh', {}, { withCredentials: true });
-            if (res.data.success && res.data.accessToken) {
-              setAccessToken(res.data.accessToken);
-              setUser(res.data.user);
-            }
-          } catch (err) {
-            console.log('Silent token refresh failed or cookie expired.');
-            localStorage.removeItem('clouderp_user_logged_in');
-          }
+        } catch (err) {
+          console.log('Silent token refresh failed or cookie expired.');
+          localStorage.removeItem('clouderp_user_logged_in');
         }
       }
       setLoading(false);

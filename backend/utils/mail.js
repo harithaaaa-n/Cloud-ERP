@@ -34,20 +34,13 @@ const createTransporter = () => {
   });
 };
 
-let transporter;
-const getTransporter = () => {
-  if (!transporter) {
-    transporter = createTransporter();
-  }
-  return transporter;
-};
+const transporter = createTransporter();
 
 // 2. Generic Send Email Helper
 export const sendEmail = async ({ to, subject, html }) => {
   try {
     const from = process.env.SMTP_FROM || '"CloudERP Systems" <noreply@clouderp.com>';
-    const activeTransporter = getTransporter();
-    const info = await activeTransporter.sendMail({
+    const info = await transporter.sendMail({
       from,
       to,
       subject,

@@ -32,13 +32,13 @@ router.route('/employees/:id')
   .delete(authorize('admin', 'hr'), deleteEmployee);
 
 // ── Attendance Logs ───────────────────────────────────────────────
-// Managers, HR, Admin and Employees (own only) can record attendance
-router.post('/employees/:id/attendance', authorize('admin', 'hr', 'manager', 'employee'), recordAttendance);
+// Managers, HR and Admin can record; employees cannot self-log attendance
+router.post('/employees/:id/attendance', authorize('admin', 'hr', 'manager'), recordAttendance);
 
 // ── Leave Management ──────────────────────────────────────────────
-// Employees can apply for their own leave; HR/Admin/Manager process approvals
+// Employees can apply for their own leave; HR/Admin process approvals
 router.post('/employees/:id/leaves', authorize('admin', 'hr', 'employee'), applyLeave);
-router.patch('/leaves/:leaveId', authorize('admin', 'hr', 'manager'), updateLeaveStatus);
+router.patch('/leaves/:leaveId', authorize('admin', 'hr'), updateLeaveStatus);
 
 // ── Salary / Payroll Logs ─────────────────────────────────────────
 router.get('/payroll', authorize('admin', 'hr', 'finance'), getAllPayslips);

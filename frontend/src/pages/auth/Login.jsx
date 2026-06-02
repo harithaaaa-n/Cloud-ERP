@@ -99,18 +99,11 @@ export default function Login() {
   const location  = useLocation();
   const { login } = useAuth();
 
-  const [demoMode, setDemoMode] = useState(() => localStorage.getItem('clouderp_demo_mode') === 'true');
   const [form, setForm]         = useState({ email:'', password:'' });
   const [errors, setErrors]     = useState({});
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading]   = useState(false);
   const [apiError, setApiError] = useState('');
-
-  const toggleDemoMode = () => {
-    const next = !demoMode;
-    setDemoMode(next);
-    localStorage.setItem('clouderp_demo_mode', next ? 'true' : 'false');
-  };
 
   const from = location.state?.from?.pathname || '/dashboard';
 
@@ -167,36 +160,6 @@ export default function Login() {
 
           {/* ── Top accent bar ──────────────────────────────────── */}
           <div style={{ height:'4px', background:'linear-gradient(90deg, #6366f1, #8b5cf6, #a855f7)' }} />
-
-          {/* ── Demo Mode Notice ────────────────────────────────── */}
-          <div 
-            onClick={toggleDemoMode}
-            style={{
-              padding: '10px 16px',
-              background: demoMode ? 'rgba(245, 158, 11, 0.08)' : 'rgba(16, 185, 129, 0.08)',
-              borderBottom: '1px solid ' + (demoMode ? 'rgba(245, 158, 11, 0.15)' : 'rgba(16, 185, 129, 0.15)'),
-              textAlign: 'center',
-              cursor: 'pointer',
-              fontSize: '12px',
-              fontWeight: 600,
-              color: demoMode ? '#d97706' : '#059669',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              transition: 'background 0.2s'
-            }}
-          >
-            <span style={{ 
-              width: 8, height: 8, borderRadius: '50%', 
-              background: demoMode ? '#d97706' : '#059669',
-              display: 'inline-block' 
-            }} />
-            {demoMode 
-              ? 'Demo Mode Active (Local Sandbox). Click to switch to Live API.' 
-              : 'Live API Active. Click to switch to Demo Sandbox.'
-            }
-          </div>
 
           {/* ── Logo section — CENTERED ─────────────────────────── */}
           <div style={{ padding:'36px 40px 28px', textAlign:'center', borderBottom:'1px solid #f3f4f6' }}>
@@ -322,62 +285,6 @@ export default function Login() {
                 </motion.button>
               </div>
             </form>
-
-            {/* Quick Demo Logins */}
-            <div style={{ marginTop: '24px', borderTop: '1px solid #f3f4f6', paddingTop: '20px' }}>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', textAlign: 'center' }}>
-                Quick Sandbox Access
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', justifyContent: 'center' }}>
-                {[
-                  { role: 'Admin', email: 'admin@clouderp.com' },
-                  { role: 'HR', email: 'hr@clouderp.com' },
-                  { role: 'Finance', email: 'finance@clouderp.com' },
-                  { role: 'Manager', email: 'manager@clouderp.com' },
-                  { role: 'Employee', email: 'employee@clouderp.com' },
-                  { role: 'Inventory', email: 'inventory@clouderp.com' },
-                  { role: 'Supply Chain', email: 'supply@clouderp.com' }
-                ].map(acc => (
-                  <button
-                    key={acc.role}
-                    type="button"
-                    onClick={() => {
-                      setForm({ email: acc.email, password: 'CloudERP@123' });
-                      if (!demoMode) {
-                        setDemoMode(true);
-                        localStorage.setItem('clouderp_demo_mode', 'true');
-                      }
-                      setErrors({});
-                      setApiError('');
-                    }}
-                    style={{
-                      padding: '5px 10px',
-                      fontSize: '11px',
-                      fontWeight: 600,
-                      borderRadius: '6px',
-                      border: '1px solid #e5e7eb',
-                      background: '#f9fafb',
-                      color: '#4b5563',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.background = '#6366f1';
-                      e.currentTarget.style.color = '#fff';
-                      e.currentTarget.style.borderColor = '#6366f1';
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.background = '#f9fafb';
-                      e.currentTarget.style.color = '#4b5563';
-                      e.currentTarget.style.borderColor = '#e5e7eb';
-                    }}
-                  >
-                    {acc.role}
-                  </button>
-                ))}
-              </div>
-            </div>
-
           </div>
 
           {/* ── Footer strip — CENTERED ──────────────────────────── */}

@@ -23,11 +23,11 @@ router.use(protect);
 
 // ── Employee CRUD ─────────────────────────────────────────────────
 router.route('/employees')
-  .get(authorize('admin', 'hr', 'manager', 'employee'), getEmployees)
+  .get(authorize('admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply'), getEmployees)
   .post(authorize('admin', 'hr'), validate(hrSchemas.createEmployee), createEmployee);
 
 router.route('/employees/:id')
-  .get(authorize('admin', 'hr', 'manager', 'employee'), getEmployeeById)
+  .get(authorize('admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply'), getEmployeeById)
   .put(authorize('admin', 'hr'), validate(hrSchemas.updateEmployee), updateEmployee)
   .delete(authorize('admin', 'hr'), deleteEmployee);
 
@@ -37,7 +37,7 @@ router.post('/employees/:id/attendance', authorize('admin', 'hr', 'manager'), re
 
 // ── Leave Management ──────────────────────────────────────────────
 // Employees can apply for their own leave; HR/Admin process approvals
-router.post('/employees/:id/leaves', authorize('admin', 'hr', 'employee'), applyLeave);
+router.post('/employees/:id/leaves', authorize('admin', 'hr', 'manager', 'employee', 'finance', 'inventory', 'supply'), applyLeave);
 router.patch('/leaves/:leaveId', authorize('admin', 'hr'), updateLeaveStatus);
 
 // ── Salary / Payroll Logs ─────────────────────────────────────────

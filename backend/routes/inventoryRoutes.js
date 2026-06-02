@@ -23,7 +23,7 @@ router.get('/logs', authorize('admin', 'manager', 'inventory'), getInventoryLogs
 
 // ── Catalog Operations ──
 router.route('/')
-  .get(authorize('admin', 'manager', 'inventory'), getProducts)
+  .get(authorize('admin', 'manager', 'inventory', 'supply', 'finance'), getProducts)
   .post(authorize('admin', 'manager', 'inventory'), validate(inventorySchemas.createProduct), createProduct);
 
 router.route('/:id')

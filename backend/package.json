@@ -9,7 +9,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "dev": "nodemon index.js"
+    "dev": "nodemon -e js,json,env index.js"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

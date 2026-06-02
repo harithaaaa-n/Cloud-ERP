@@ -47,7 +47,9 @@ export const getEmployees = async (req, res) => {
     const skip = (pageNum - 1) * limitNum;
 
     const total = await Employee.countDocuments(query);
+    const isAuthorizedForSalary = ['admin', 'hr', 'finance'].includes(req.user.role);
     const employees = await Employee.find(query)
+      .select(isAuthorizedForSalary ? '' : '-salary')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limitNum);
@@ -78,10 +80,21 @@ export const getEmployeeById = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Employee not found.' });
     }
 
+    // Ownership check: non-privileged roles can only view their own profile
+    const isPrivilegedRole = ['admin', 'hr', 'manager', 'finance'].includes(req.user.role);
+    if (!isPrivilegedRole && employee.email.toLowerCase() !== req.user.email.toLowerCase()) {
+      return res.status(403).json({ success: false, message: 'Access denied. You are only authorized to view your own profile records.' });
+    }
+
     // Fetch related records
     const attendance = await Attendance.find({ employee: employee._id }).sort({ date: -1 }).limit(30);
     const leaves = await Leave.find({ employee: employee._id }).sort({ startDate: -1 });
-    const salaries = await Salary.find({ employee: employee._id }).sort({ month: -1 });
+    
+    // Salaries / payslips visibility check
+    const isAuthorizedForSalary = ['admin', 'hr', 'finance'].includes(req.user.role) || employee.email.toLowerCase() === req.user.email.toLowerCase();
+    const salaries = isAuthorizedForSalary
+      ? await Salary.find({ employee: employee._id }).sort({ month: -1 })
+      : [];
 
     res.status(200).json({
       success: true,
@@ -169,6 +182,12 @@ export const recordAttendance = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Employee not found' });
     }
 
+    // Attendance log ownership verification
+    const isHrOrAdminOrManager = ['admin', 'hr', 'manager'].includes(req.user.role);
+    if (!isHrOrAdminOrManager && employee.email.toLowerCase() !== req.user.email.toLowerCase()) {
+      return res.status(403).json({ success: false, message: 'Access denied. You can only record attendance for yourself.' });
+    }
+
     const hoursWorked = calculateHours(checkIn, checkOut);
 
     // Upsert attendance record for the date
@@ -196,6 +215,12 @@ export const applyLeave = async (req, res) => {
     const employee = await Employee.findById(req.params.id);
     if (!employee) {
       return res.status(404).json({ success: false, message: 'Employee not found' });
+    }
+
+    // Leave request ownership verification
+    const isHrOrAdminOrManager = ['admin', 'hr', 'manager'].includes(req.user.role);
+    if (!isHrOrAdminOrManager && employee.email.toLowerCase() !== req.user.email.toLowerCase()) {
+      return res.status(403).json({ success: false, message: 'Access denied. You can only apply for leave for yourself.' });
     }
 
     const leave = await Leave.create({

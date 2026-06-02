@@ -1,6 +1,5 @@
-import dotenv from 'dotenv';
-// ── Load Environment Variables FIRST ─────────────────────────────
-dotenv.config();
+import 'dotenv/config'; // Loads env variables before all other module imports
+
 
 import express from 'express';
 import http from 'http';

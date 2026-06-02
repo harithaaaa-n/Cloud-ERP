@@ -57,14 +57,25 @@ export default function Profiles() {
     setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 4000);
   };
 
-  const isAdminOrHR = currentUser && ['admin', 'hr'].includes(currentUser.role);
-  const isAdminOrManager = currentUser && ['admin', 'manager'].includes(currentUser.role);
+  const canViewAllProfiles = currentUser && ['admin', 'hr', 'manager', 'finance'].includes(currentUser.role);
+  const canProcessLeaves = currentUser && ['admin', 'hr', 'manager'].includes(currentUser.role);
+  const canManagePayroll = currentUser && ['admin', 'hr', 'finance'].includes(currentUser.role);
+  const canRecordAttendance = currentUser && (['admin', 'hr', 'manager'].includes(currentUser.role) || (activeProfile?.employee && currentUser.email.toLowerCase() === activeProfile.employee.email.toLowerCase()));
+  const canApplyLeave = currentUser && (['admin', 'hr'].includes(currentUser.role) || (activeProfile?.employee && currentUser.email.toLowerCase() === activeProfile.employee.email.toLowerCase()));
 
   // Fetch employees list for the sidebar
   const fetchEmployeesList = async () => {
     try {
       setLoadingList(true);
-      const res = await api.hr.getEmployees({ page: 1, limit: 100 });
+      const canViewAll = currentUser && ['admin', 'hr', 'manager', 'finance'].includes(currentUser.role);
+      
+      let res;
+      if (canViewAll) {
+        res = await api.hr.getEmployees({ page: 1, limit: 100 });
+      } else {
+        res = await api.hr.getEmployees({ search: currentUser.email });
+      }
+
       if (res.success) {
         setEmployees(res.data);
         // If no ID is specified in URL, set the first employee
@@ -88,8 +99,9 @@ export default function Profiles() {
       const res = await api.hr.getEmployeeById(id);
       if (res.success) {
         setActiveProfile(res.data);
-        // Pre-fill payroll base salary if defined
-        setPayrollForm(p => ({ ...p, basicSalary: res.data.employee.salary.toString() }));
+        // Pre-fill payroll base salary if defined and visible
+        const salaryValue = res.data.employee.salary ? res.data.employee.salary.toString() : '0';
+        setPayrollForm(p => ({ ...p, basicSalary: salaryValue }));
       }
     } catch (err) {
       console.error(err);
@@ -246,72 +258,76 @@ export default function Profiles() {
       <div className="flex flex-col lg:flex-row gap-6">
         
         {/* Left Column: Sidebar directory */}
-        <div className="w-full lg:w-80 flex-shrink-0">
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            
-            {/* Sidebar list of employees */}
-            <motion.div className="glass-card" style={{ padding: 20 }}
-              initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
-              <div className="section-title">Directory Directory</div>
+        {canViewAllProfiles && (
+          <div className="w-full lg:w-80 flex-shrink-0">
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
               
-              {loadingList ? (
-                <div className="flex items-center justify-center" style={{ padding: '24px 0' }}>
-                  <Loader2 size={24} color="var(--accent-primary)" style={{ animation: 'spin 1s linear infinite' }} />
-                </div>
-              ) : employees.length === 0 ? (
-                <div style={{ padding: '12px 0', fontSize: 13, color: 'var(--text-muted)' }}>No employees registered.</div>
-              ) : (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '420px', overflowY: 'auto', paddingRight: 4 }}>
-                  {employees.map((e, i) => (
-                    <div 
-                      key={e._id} 
-                      className={`nav-item ${employeeId === e._id ? 'active' : ''}`} 
-                      style={{ padding: '8px 10px', borderRadius: 8, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center' }}
-                      onClick={() => setSearchParams({ id: e._id })}
-                    >
-                      {e.profileImage ? (
-                        <img src={e.profileImage} alt={e.name} style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }} />
-                      ) : (
-                        <div style={{
-                          width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-                          background: avatarColors[i % avatarColors.length],
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 11, fontWeight: 700, color: 'white'
-                        }}>{getInitials(e.name)}</div>
-                      )}
-                      <div style={{ minWidth: 0, flex: 1 }}>
-                        <div style={{ fontSize: 13, fontWeight: 600, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{e.name}</div>
-                        <div style={{ fontSize: 11, color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{e.role}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </motion.div>
-
-            {/* Quick Status overview */}
-            {activeProfile?.employee && (
+              {/* Sidebar list of employees */}
               <motion.div className="glass-card" style={{ padding: 20 }}
-                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
-                <div className="section-title">Status Dashboard</div>
-                <div style={{ display: 'grid', gap: 12 }}>
-                  <div className="flex justify-between items-center text-sm">
-                    <span style={{ color: 'var(--text-muted)' }}>Status:</span>
-                    <span className={`badge ${activeProfile.employee.status === 'Active' ? 'badge-success' : activeProfile.employee.status === 'On Leave' ? 'badge-amber' : 'badge-danger'}`}>{activeProfile.employee.status}</span>
+                initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.1 }}>
+                <div className="section-title">Directory Directory</div>
+                
+                {loadingList ? (
+                  <div className="flex items-center justify-center" style={{ padding: '24px 0' }}>
+                    <Loader2 size={24} color="var(--accent-primary)" style={{ animation: 'spin 1s linear infinite' }} />
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span style={{ color: 'var(--text-muted)' }}>Monthly Salary:</span>
-                    <span style={{ fontWeight: 600 }}>₹{activeProfile.employee.salary.toLocaleString('en-IN')}</span>
+                ) : employees.length === 0 ? (
+                  <div style={{ padding: '12px 0', fontSize: 13, color: 'var(--text-muted)' }}>No employees registered.</div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: '420px', overflowY: 'auto', paddingRight: 4 }}>
+                    {employees.map((e, i) => (
+                      <div 
+                        key={e._id} 
+                        className={`nav-item ${employeeId === e._id ? 'active' : ''}`} 
+                        style={{ padding: '8px 10px', borderRadius: 8, cursor: 'pointer', display: 'flex', gap: 12, alignItems: 'center' }}
+                        onClick={() => setSearchParams({ id: e._id })}
+                      >
+                        {e.profileImage ? (
+                          <img src={e.profileImage} alt={e.name} style={{ width: 30, height: 30, borderRadius: '50%', objectFit: 'cover' }} />
+                        ) : (
+                          <div style={{
+                            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+                            background: avatarColors[i % avatarColors.length],
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontSize: 11, fontWeight: 700, color: 'white'
+                          }}>{getInitials(e.name)}</div>
+                        )}
+                        <div style={{ minWidth: 0, flex: 1 }}>
+                          <div style={{ fontSize: 13, fontWeight: 600, textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{e.name}</div>
+                          <div style={{ fontSize: 11, color: 'var(--text-muted)', textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap' }}>{e.role}</div>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <div className="flex justify-between items-center text-sm">
-                    <span style={{ color: 'var(--text-muted)' }}>Designation:</span>
-                    <span style={{ color: 'var(--text-secondary)' }}>{activeProfile.employee.role}</span>
-                  </div>
-                </div>
+                )}
               </motion.div>
-            )}
+
+              {/* Quick Status overview */}
+              {activeProfile?.employee && (
+                <motion.div className="glass-card" style={{ padding: 20 }}
+                  initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.15 }}>
+                  <div className="section-title">Status Dashboard</div>
+                  <div style={{ display: 'grid', gap: 12 }}>
+                    <div className="flex justify-between items-center text-sm">
+                      <span style={{ color: 'var(--text-muted)' }}>Status:</span>
+                      <span className={`badge ${activeProfile.employee.status === 'Active' ? 'badge-success' : activeProfile.employee.status === 'On Leave' ? 'badge-amber' : 'badge-danger'}`}>{activeProfile.employee.status}</span>
+                    </div>
+                    {activeProfile.employee.salary !== undefined && (
+                      <div className="flex justify-between items-center text-sm">
+                        <span style={{ color: 'var(--text-muted)' }}>Monthly Salary:</span>
+                        <span style={{ fontWeight: 600 }}>₹{activeProfile.employee.salary.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between items-center text-sm">
+                      <span style={{ color: 'var(--text-muted)' }}>Designation:</span>
+                      <span style={{ color: 'var(--text-secondary)' }}>{activeProfile.employee.role}</span>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Right Column: Profile Detail Hub */}
         <div className="flex-1">
@@ -444,35 +460,41 @@ export default function Profiles() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col md:flex-row gap-6">
                   
                   {/* Daily Logging Form */}
-                  <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Log Daily Attendance</h3>
-                    <form onSubmit={handleRecordAttendance}>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Calendar Date</label>
-                        <input className="form-input" type="date" value={attendanceForm.date} onChange={e => setAttendanceForm({ ...attendanceForm, date: e.target.value })} required />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Status</label>
-                        <select className="form-select" value={attendanceForm.status} onChange={e => setAttendanceForm({ ...attendanceForm, status: e.target.value })}>
-                          <option value="Present">Present</option>
-                          <option value="Absent">Absent</option>
-                          <option value="Late">Late</option>
-                          <option value="On Leave">On Leave</option>
-                        </select>
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Check-In Time</label>
-                        <input className="form-input" type="time" value={attendanceForm.checkIn} onChange={e => setAttendanceForm({ ...attendanceForm, checkIn: e.target.value })} />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 20 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Check-Out Time</label>
-                        <input className="form-input" type="time" value={attendanceForm.checkOut} onChange={e => setAttendanceForm({ ...attendanceForm, checkOut: e.target.value })} />
-                      </div>
-                      <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
-                        {actionLoading ? 'Saving...' : 'Record Attendance'}
-                      </button>
-                    </form>
-                  </div>
+                  {canRecordAttendance ? (
+                    <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Log Daily Attendance</h3>
+                      <form onSubmit={handleRecordAttendance}>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Calendar Date</label>
+                          <input className="form-input" type="date" value={attendanceForm.date} onChange={e => setAttendanceForm({ ...attendanceForm, date: e.target.value })} required />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Status</label>
+                          <select className="form-select" value={attendanceForm.status} onChange={e => setAttendanceForm({ ...attendanceForm, status: e.target.value })}>
+                            <option value="Present">Present</option>
+                            <option value="Absent">Absent</option>
+                            <option value="Late">Late</option>
+                            <option value="On Leave">On Leave</option>
+                          </select>
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Check-In Time</label>
+                          <input className="form-input" type="time" value={attendanceForm.checkIn} onChange={e => setAttendanceForm({ ...attendanceForm, checkIn: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 20 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Check-Out Time</label>
+                          <input className="form-input" type="time" value={attendanceForm.checkOut} onChange={e => setAttendanceForm({ ...attendanceForm, checkOut: e.target.value })} />
+                        </div>
+                        <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
+                          {actionLoading ? 'Saving...' : 'Record Attendance'}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="glass-card text-center" style={{ padding: 24, flex: '0 0 280px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>Attendance logging is restricted to Admin, HR, Managers, or the employee themselves.</p>
+                    </div>
+                  )}
 
                   {/* Attendance Log Table */}
                   <div className="glass-card flex-1" style={{ padding: 24 }}>
@@ -510,36 +532,42 @@ export default function Profiles() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col md:flex-row gap-6">
                   
                   {/* Apply for Leave Form */}
-                  <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Apply for Leave</h3>
-                    <form onSubmit={handleApplyLeave}>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Leave Type</label>
-                        <select className="form-select" value={leaveForm.leaveType} onChange={e => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}>
-                          <option value="Annual">Annual Leave</option>
-                          <option value="Sick">Sick Leave</option>
-                          <option value="Casual">Casual Leave</option>
-                          <option value="Maternity">Maternity Leave</option>
-                          <option value="Paternity">Paternity Leave</option>
-                        </select>
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Start Date</label>
-                        <input className="form-input" type="date" value={leaveForm.startDate} onChange={e => setLeaveForm({ ...leaveForm, startDate: e.target.value })} required />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>End Date</label>
-                        <input className="form-input" type="date" value={leaveForm.endDate} onChange={e => setLeaveForm({ ...leaveForm, endDate: e.target.value })} required />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 20 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Reason</label>
-                        <textarea className="form-input" rows={3} value={leaveForm.reason} onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })} required placeholder="Details on why leave is requested..." />
-                      </div>
-                      <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
-                        {actionLoading ? 'Submitting...' : 'Apply Leave'}
-                      </button>
-                    </form>
-                  </div>
+                  {canApplyLeave ? (
+                    <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Apply for Leave</h3>
+                      <form onSubmit={handleApplyLeave}>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Leave Type</label>
+                          <select className="form-select" value={leaveForm.leaveType} onChange={e => setLeaveForm({ ...leaveForm, leaveType: e.target.value })}>
+                            <option value="Annual">Annual Leave</option>
+                            <option value="Sick">Sick Leave</option>
+                            <option value="Casual">Casual Leave</option>
+                            <option value="Maternity">Maternity Leave</option>
+                            <option value="Paternity">Paternity Leave</option>
+                          </select>
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Start Date</label>
+                          <input className="form-input" type="date" value={leaveForm.startDate} onChange={e => setLeaveForm({ ...leaveForm, startDate: e.target.value })} required />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>End Date</label>
+                          <input className="form-input" type="date" value={leaveForm.endDate} onChange={e => setLeaveForm({ ...leaveForm, endDate: e.target.value })} required />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 20 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Reason</label>
+                          <textarea className="form-input" rows={3} value={leaveForm.reason} onChange={e => setLeaveForm({ ...leaveForm, reason: e.target.value })} required placeholder="Details on why leave is requested..." />
+                        </div>
+                        <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
+                          {actionLoading ? 'Submitting...' : 'Apply Leave'}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="glass-card text-center flex items-center justify-center" style={{ padding: 24, flex: '0 0 280px' }}>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>Leave registration is restricted to HR, Admins, or the employee themselves.</p>
+                    </div>
+                  )}
 
                   {/* Leaves List + Approvals */}
                   <div className="glass-card flex-1" style={{ padding: 24 }}>
@@ -550,7 +578,7 @@ export default function Profiles() {
                       <div className="table-wrapper">
                         <table>
                           <thead>
-                            <tr><th>Type</th><th>Start Date</th><th>End Date</th><th>Reason</th><th>Status</th>{isAdminOrHR && <th>Approvals</th>}</tr>
+                            <tr><th>Type</th><th>Start Date</th><th>End Date</th><th>Reason</th><th>Status</th>{canProcessLeaves && <th>Approvals</th>}</tr>
                           </thead>
                           <tbody>
                             {activeProfile.leaves.map(l => (
@@ -558,11 +586,11 @@ export default function Profiles() {
                                 <td style={{ fontWeight: 600, fontSize: 13 }}>{l.leaveType}</td>
                                 <td style={{ fontSize: 12 }}>{new Date(l.startDate).toLocaleDateString('en-IN')}</td>
                                 <td style={{ fontSize: 12 }}>{new Date(l.endDate).toLocaleDateString('en-IN')}</td>
-                                <td style={{ fontSize: 12, maxwidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.reason}>{l.reason}</td>
+                                <td style={{ fontSize: 12, maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.reason}>{l.reason}</td>
                                 <td>
                                   <span className={`badge ${l.status === 'Approved' ? 'badge-success' : l.status === 'Pending' ? 'badge-amber' : 'badge-danger'}`}>{l.status}</span>
                                 </td>
-                                {isAdminOrHR && (
+                                {canProcessLeaves && (
                                   <td>
                                     {l.status === 'Pending' ? (
                                       <div className="flex gap-1">
@@ -589,30 +617,36 @@ export default function Profiles() {
                 <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col md:flex-row gap-6">
                   
                   {/* Issue Payslip Form */}
-                  <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
-                    <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Generate Payslip</h3>
-                    <form onSubmit={handleGenerateSalary}>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Billing Month</label>
-                        <input className="form-input" value={payrollForm.month} onChange={e => setPayrollForm({ ...payrollForm, month: e.target.value })} required placeholder="e.g. May 2026" />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Basic Salary (₹)</label>
-                        <input className="form-input" type="number" value={payrollForm.basicSalary} onChange={e => setPayrollForm({ ...payrollForm, basicSalary: e.target.value })} required />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 12 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Allowances (₹)</label>
-                        <input className="form-input" type="number" value={payrollForm.allowances} onChange={e => setPayrollForm({ ...payrollForm, allowances: e.target.value })} />
-                      </div>
-                      <div className="form-group" style={{ marginBottom: 20 }}>
-                        <label className="form-label" style={{ fontSize: 11 }}>Deductions (₹)</label>
-                        <input className="form-input" type="number" value={payrollForm.deductions} onChange={e => setPayrollForm({ ...payrollForm, deductions: e.target.value })} />
-                      </div>
-                      <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
-                        {actionLoading ? 'Issuing...' : 'Generate Payslip'}
-                      </button>
-                    </form>
-                  </div>
+                  {canManagePayroll ? (
+                    <div className="glass-card" style={{ padding: 24, flex: '0 0 280px' }}>
+                      <h3 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Generate Payslip</h3>
+                      <form onSubmit={handleGenerateSalary}>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Billing Month</label>
+                          <input className="form-input" value={payrollForm.month} onChange={e => setPayrollForm({ ...payrollForm, month: e.target.value })} required placeholder="e.g. May 2026" />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Basic Salary (₹)</label>
+                          <input className="form-input" type="number" value={payrollForm.basicSalary} onChange={e => setPayrollForm({ ...payrollForm, basicSalary: e.target.value })} required />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 12 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Allowances (₹)</label>
+                          <input className="form-input" type="number" value={payrollForm.allowances} onChange={e => setPayrollForm({ ...payrollForm, allowances: e.target.value })} />
+                        </div>
+                        <div className="form-group" style={{ marginBottom: 20 }}>
+                          <label className="form-label" style={{ fontSize: 11 }}>Deductions (₹)</label>
+                          <input className="form-input" type="number" value={payrollForm.deductions} onChange={e => setPayrollForm({ ...payrollForm, deductions: e.target.value })} />
+                        </div>
+                        <button type="submit" disabled={actionLoading} className="btn btn-primary w-full">
+                          {actionLoading ? 'Issuing...' : 'Generate Payslip'}
+                        </button>
+                      </form>
+                    </div>
+                  ) : (
+                    <div className="glass-card text-center flex items-center justify-center" style={{ padding: 24, flex: '0 0 280px' }}>
+                      <p style={{ color: 'var(--text-secondary)', fontSize: 13, margin: 0 }}>Salary generation is restricted to Admin, HR, or Finance managers.</p>
+                    </div>
+                  )}
 
                   {/* Payroll Payslips History */}
                   <div className="glass-card flex-1" style={{ padding: 24 }}>
@@ -623,7 +657,7 @@ export default function Profiles() {
                       <div className="table-wrapper">
                         <table>
                           <thead>
-                            <tr><th>Month</th><th>Base Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th>{isAdminOrManager && <th>Action</th>}</tr>
+                            <tr><th>Month</th><th>Base Pay</th><th>Allowances</th><th>Deductions</th><th>Net Pay</th><th>Status</th>{canManagePayroll && <th>Action</th>}</tr>
                           </thead>
                           <tbody>
                             {activeProfile.salaries.map(s => (
@@ -636,7 +670,7 @@ export default function Profiles() {
                                 <td>
                                   <span className={`badge ${s.status === 'Paid' ? 'badge-success' : 'badge-danger'}`}>{s.status}</span>
                                 </td>
-                                {isAdminOrManager && (
+                                {canManagePayroll && (
                                   <td>
                                     {s.status === 'Pending' ? (
                                       <button className="btn btn-sm btn-secondary" style={{ padding: '2px 8px', fontSize: 10, color: 'var(--accent-emerald)' }} onClick={() => handlePaySalary(s._id)}>Pay</button>
